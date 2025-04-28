@@ -9,7 +9,6 @@ A [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server for Yah
 - **Financial Data**: Get current stock prices, historical prices, dividends, income statements, and more
 - **Visual Analytics**: Generate beautiful visualizations for market sentiment, portfolio tracking, and technical analysis
 - **Easy Integration**: Works with Claude Desktop, VS Code, Cursor, and other MCP clients
-- **Lightweight Dependencies**: Uses mcp-min for MCP protocol support rather than the full mcp-python-sdk
 
 ## Setup Instructions
 
@@ -33,7 +32,7 @@ pip install -r requirements.txt
 If the requirements.txt file is missing, you can install dependencies directly:
 
 ```sh
-pip install mcp-min yfinance pandas matplotlib seaborn plotly kaleido numpy pillow base64io
+pip install mcp yfinance pandas matplotlib seaborn plotly kaleido numpy pillow base64io
 ```
 
 ### 3. Configure MCP Client
@@ -139,7 +138,7 @@ Here are some example prompts to try with Claude:
 ### Basic Financial Data
 1. "What is the current stock price of Apple?"
 2. "What is the difference in stock price between Apple and Google?"
-3. "How much did the stock price of Apple change between 2023-01-01 and 2023-12-31?"
+3. "How much did the stock price of Apple change between 2025-01-01 and 2025-3-31?"
 
 ### Visualization Requests
 1. "Generate a market sentiment dashboard showing the performance of major indices."

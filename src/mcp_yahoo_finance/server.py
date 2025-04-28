@@ -2,19 +2,20 @@ import json
 from typing import Any, Literal
 
 import pandas as pd
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from mcp.types import ImageContent, TextContent, Tool
+from mcp.server.fastmcp import FastMCP
+from mcp.types import ImageContent, TextContent
 from requests import Session
 from yfinance import Ticker
 
-from mcp_yahoo_finance.utils import generate_tool
 from mcp_yahoo_finance.visualization import (
     generate_market_sentiment_dashboard,
-    generate_portfolio_tracking, 
+    generate_portfolio_tracking,
     generate_stock_analysis
 )
 
+# Remove instantiations from here
+# mcp_instance = FastMCP()
+# yf_instance = YahooFinance()
 
 class YahooFinance:
     def __init__(self, session: Session | None = None, verify: bool = True) -> None:
@@ -191,70 +192,155 @@ class YahooFinance:
         """
         return generate_stock_analysis(symbol)
 
+# Instantiate AFTER class definition
+mcp_instance = FastMCP()
+yf_instance = YahooFinance()
 
-async def serve() -> None:
-    server = Server("mcp-yahoo-finance")
-    yf = YahooFinance()
+# --- Tool Definitions using FastMCP --- #
 
-    @server.list_tools()
-    async def list_tools() -> list[Tool]:
-        return [
-            generate_tool(yf.get_current_stock_price),
-            generate_tool(yf.get_stock_price_by_date),
-            generate_tool(yf.get_stock_price_date_range),
-            generate_tool(yf.get_historical_stock_prices),
-            generate_tool(yf.get_dividends),
-            generate_tool(yf.get_income_statement),
-            generate_tool(yf.get_cashflow),
-            generate_tool(yf.get_earning_dates),
-            generate_tool(yf.get_news),
-            generate_tool(yf.generate_market_dashboard),
-            generate_tool(yf.generate_portfolio_report),
-            generate_tool(yf.generate_stock_technical_analysis),
-        ]
+@mcp_instance.tool()
+def get_current_stock_price(symbol: str) -> str:
+    """Get the current stock price based on stock symbol.
 
-    @server.call_tool()
-    async def call_tool(name: str, args: dict[str, Any]) -> list[TextContent | ImageContent]:
-        match name:
-            case "get_current_stock_price":
-                price = yf.get_current_stock_price(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_stock_price_by_date":
-                price = yf.get_stock_price_by_date(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_stock_price_date_range":
-                price = yf.get_stock_price_date_range(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_historical_stock_prices":
-                price = yf.get_historical_stock_prices(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_dividends":
-                price = yf.get_dividends(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_income_statement":
-                price = yf.get_income_statement(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_cashflow":
-                price = yf.get_cashflow(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_earning_dates":
-                price = yf.get_earning_dates(**args)
-                return [TextContent(type="text", text=price)]
-            case "get_news":
-                price = yf.get_news(**args)
-                return [TextContent(type="text", text=price)]
-            case "generate_market_dashboard":
-                image_base64 = yf.generate_market_dashboard(**args)
-                return [ImageContent(type="image", image={"format": "png", "base64": image_base64})]
-            case "generate_portfolio_report":
-                image_base64 = yf.generate_portfolio_report(**args)
-                return [ImageContent(type="image", image={"format": "png", "base64": image_base64})]
-            case "generate_stock_technical_analysis":
-                image_base64 = yf.generate_stock_technical_analysis(**args)
-                return [ImageContent(type="image", image={"format": "png", "base64": image_base64})]
-            case _:
-                raise ValueError(f"Unknown tool: {name}")
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+    """
+    return yf_instance.get_current_stock_price(symbol)
 
-    options = server.create_initialization_options()
-    async with stdio_server() as (read_stream, write_stream):
-        await server.run(read_stream, write_stream, options, raise_exceptions=True)
+@mcp_instance.tool()
+def get_stock_price_by_date(symbol: str, date: str) -> str:
+    """Get the stock price for a given stock symbol on a specific date.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+        date (str): The date in YYYY-MM-DD format.
+    """
+    return yf_instance.get_stock_price_by_date(symbol, date)
+
+@mcp_instance.tool()
+def get_stock_price_date_range(symbol: str, start_date: str, end_date: str) -> str:
+    """Get the stock prices for a given date range for a given stock symbol.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+        start_date (str): The start date in YYYY-MM-DD format.
+        end_date (str): The end date in YYYY-MM-DD format.
+    """
+    return yf_instance.get_stock_price_date_range(symbol, start_date, end_date)
+
+@mcp_instance.tool()
+def get_historical_stock_prices(
+    symbol: str,
+    period: Literal[
+        "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"
+    ] = "1mo",
+    interval: Literal["1d", "5d", "1wk", "1mo", "3mo"] = "1d",
+) -> str:
+    """Get historical stock prices for a given stock symbol.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+        period (str): The period for historical data. Defaults to "1mo".
+                Valid periods: "1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"
+        interval (str): The interval beween data points. Defaults to "1d".
+                Valid intervals: "1d", "5d", "1wk", "1mo", "3mo"
+    """
+    return yf_instance.get_historical_stock_prices(symbol, period, interval)
+
+@mcp_instance.tool()
+def get_dividends(symbol: str) -> str:
+    """Get dividends for a given stock symbol.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+    """
+    return yf_instance.get_dividends(symbol)
+
+@mcp_instance.tool()
+def get_income_statement(
+    symbol: str, freq: Literal["yearly", "quarterly", "trainling"] = "yearly"
+) -> str:
+    """Get income statement for a given stock symbol.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+        freq (str): At what frequency to get cashflow statements. Defaults to "yearly".
+                Valid freqencies: "yearly", "quarterly", "trainling"
+    """
+    return yf_instance.get_income_statement(symbol, freq)
+
+@mcp_instance.tool()
+def get_cashflow(
+    symbol: str, freq: Literal["yearly", "quarterly", "trainling"] = "yearly"
+) -> str:
+    """Get cashflow for a given stock symbol.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+        freq (str): At what frequency to get cashflow statements. Defaults to "yearly".
+                Valid freqencies: "yearly", "quarterly", "trainling"
+    """
+    # Note: Original function didn't specify return type, assuming str
+    return str(yf_instance.get_cashflow(symbol, freq))
+
+@mcp_instance.tool()
+def get_earning_dates(symbol: str, limit: int = 12) -> str:
+    """Get earning dates.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+        limit (int): max amount of upcoming and recent earnings dates to return. Default value 12 should return next 4 quarters and last 8 quarters. Increase if more history is needed.
+    """
+    return yf_instance.get_earning_dates(symbol, limit)
+
+@mcp_instance.tool()
+def get_news(symbol: str) -> str:
+    """Get news for a given stock symbol.
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format.
+    """
+    return yf_instance.get_news(symbol)
+
+# --- Visualization Tools (Potential adjustment needed for return type) --- #
+
+# Note: FastMCP might handle return types differently. If images don't work,
+# we might need to return ImageContent explicitly.
+@mcp_instance.tool()
+def generate_market_dashboard(indices: str = "^GSPC,^DJI,^IXIC") -> Any:
+    """Generate a market sentiment dashboard image (base64 PNG).
+
+    Args:
+        indices (str): Comma-separated list of index symbols (default: "^GSPC,^DJI,^IXIC")
+    """
+    # For now, return the base64 string. May need adjustment.
+    image_base64 = yf_instance.generate_market_dashboard(indices)
+    # return ImageContent(type="image", image={"format": "png", "base64": image_base64})
+    return image_base64
+
+@mcp_instance.tool()
+def generate_portfolio_report(symbols: str = "AAPL,MSFT,GOOGL,AMZN,NVDA") -> Any:
+    """Generate a portfolio performance tracking report image (base64 PNG).
+
+    Args:
+        symbols (str): Comma-separated list of stock symbols (default: "AAPL,MSFT,GOOGL,AMZN,NVDA")
+    """
+    image_base64 = yf_instance.generate_portfolio_report(symbols)
+    # return ImageContent(type="image", image={"format": "png", "base64": image_base64})
+    return image_base64
+
+@mcp_instance.tool()
+def generate_stock_technical_analysis(symbol: str = "TSLA") -> Any:
+    """Generate a deep technical analysis report image (base64 PNG).
+
+    Args:
+        symbol (str): Stock symbol in Yahoo Finance format (default: "TSLA")
+    """
+    image_base64 = yf_instance.generate_stock_technical_analysis(symbol)
+    # return ImageContent(type="image", image={"format": "png", "base64": image_base64})
+    return image_base64
+
+
+def main():
+    # Run the server using stdio transport
+    mcp_instance.run(transport='stdio')
