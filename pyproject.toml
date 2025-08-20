@@ -1,7 +1,7 @@
 [project]
-name = "mcp-yahoo-finance"
-version = "0.0.2"
-description = "MCP server for Yahoo Finance"
+name = "mcp-yahoo-finance-ia"
+version = "2.0.0"
+description = "Professional-grade MCP server with 26 financial tools: portfolio management, risk analysis, technical indicators, options trading, sector rotation, news sentiment, and comprehensive market analytics"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -18,4 +18,4 @@ dependencies = [
 ]
 
 [project.scripts]
-mcp-yahoo-finance = "mcp_yahoo_finance.server:main"
+mcp-yahoo-finance-ia = "mcp_yahoo_finance.server:main"
