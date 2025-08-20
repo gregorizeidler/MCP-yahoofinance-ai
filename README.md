@@ -1,7 +1,7 @@
 # 📈 MCP-Yahoo Finance IA
 
 A comprehensive [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server that transforms Yahoo Finance into a powerful financial analysis platform. Built for professional traders, analysts, and AI assistants who need real-time market data, advanced analytics, and beautiful visualizations.
-
+ 
 ## Features
 
 - **Comprehensive Financial Data**: Get current stock prices, historical prices, dividends, income statements, cashflow, and earnings
